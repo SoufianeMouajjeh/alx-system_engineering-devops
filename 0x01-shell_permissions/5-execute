@@ -1,2 +1,2 @@
-5-execute
+#!/bin/bash
 chmod u+x hello
