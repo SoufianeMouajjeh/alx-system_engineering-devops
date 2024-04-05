@@ -1,0 +1,32 @@
+global
+    log /dev/log    local0
+    log /dev/log    local1 notice
+    maxconn 4096
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    timeout connect 5000
+    timeout client  50000
+    timeout server  50000
+
+frontend http_front
+    bind *:80
+    mode http
+    http-request redirect scheme https code 301 unless { ssl_fc }
+    http-request set-header X_Forwarded-Proto http
+    default_backend http_back
+
+frontend http_front_https
+    bind *:443 ssl crt /etc/haproxy/certs/www.hschool.tech.pem
+    http-request set-header X-Forwarded-Proto https
+    default_backend http_back
+
+backend http_back
+    server 519167-web-01 52.203.91.47:80 maxconn 32
+    server 519167-web-02 100.26.152.120:80 maxconn 32
