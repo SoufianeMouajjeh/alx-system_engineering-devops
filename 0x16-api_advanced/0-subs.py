@@ -1,5 +1,5 @@
 import requests
-
+""" Get how many subscribers """
 def number_of_subscribers(subreddit):
     # Reddit API URL to get subreddit information
     url = f"https://www.reddit.com/r/{subreddit}/about.json"
