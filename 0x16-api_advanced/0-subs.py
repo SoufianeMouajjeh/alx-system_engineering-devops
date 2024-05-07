@@ -1,15 +1,17 @@
 #!/usr/bin/python3
-""" Get how many subscribers """
+""" GET how many subscribers a subreddit has """
+
 import requests
 
 
 def number_of_subscribers(subreddit):
-    """ get how many subscribers """
+    """ GET how many subscribers a subreddit has """
     url = f"https://www.reddit.com/r/{subreddit}/about.json"
-    response = requests.get(url, headers={})
-
+    headers = {'User-Agent': 'Custom User Agent'}
+    response = requests.get(url, headers=headers, allow_redirects=False)
     if response.status_code == 200:
         data = response.json()
-        return data['data']['subscribers']
+        subscribers = data['data']['subscribers']
+        return subscribers
     else:
         return 0
