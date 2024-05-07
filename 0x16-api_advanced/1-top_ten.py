@@ -1,18 +1,25 @@
 #!/usr/bin/python3
-""" GET the top ten hot posts of a subreddit """
-
+""" Top 10 subscribers """
 import requests
 
 
 def top_ten(subreddit):
-    """ GET the top ten hot posts of a subreddit """
-    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
-    headers = {'User-Agent': 'Custom User Agent'}
-    response = requests.get(url, headers=headers, allow_redirects=False)
-    if response.status_code == 200:
-        data = response.json()
-        posts = data['data']['children']
-        for i in range(10):
-            print(posts[i]['data']['title'])
+    """Get top 10 subscribers"""
+    req = requests.get(
+        f"https://www.reddit.com/r/{subreddit}/hot.json",
+        headers={},
+        params={"limit": 10},
+    )
+
+    if req.status_code == 200:
+        data = req.json().get("data")
+        if data and "children" in data:
+            for child in data["children"]:
+                if "data" in child and "title" in child["data"]:
+                    print(child["data"]["title"])
+                else:
+                    print("Invalid post format: ", child)
+        else:
+            print("No data returned from Reddit.")
     else:
         print(None)
