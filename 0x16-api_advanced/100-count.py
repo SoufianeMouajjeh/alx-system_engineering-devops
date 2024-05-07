@@ -1,35 +1,44 @@
 #!/usr/bin/python3
-""" GET request to Reddit API """
+""" Module for storing the count_words function. """
+from requests import get
 
-import requests
 
+def count_words(subreddit, word_list, word_count=None, after=None):
+    """
+    Prints the count of the given words present in the title of the
+    subreddit's hottest articles.
+    """
+    if word_count is None:
+        word_count = {}
 
-def count_words(subreddit, word_list, word_count={}, after=None):
-    """ GET request to Reddit API """
-    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
-    headers = {'User-Agent': 'Custom User Agent'}
-    params = {'after': after}
-    response = requests.get(url, headers=headers, params=params,
-                            allow_redirects=False)
-    if response.status_code == 200:
-        data = response.json()
-        posts = data['data']['children']
-        after = data['data']['after']
-        for post in posts:
-            title = post['data']['title'].lower().split()
-            for word in word_list:
-                if word.lower() in title:
-                    if word in word_count:
-                        word_count[word] += 1
-                    else:
-                        word_count[word] = 1
-        if after is not None:
-            return count_words(subreddit, word_list, word_count, after)
-        if len(word_count) == 0:
-            print()
-        else:
-            for key, value in sorted(word_count.items(),
-                                      key=lambda x: (-x[1], x[0])):
-                print(f"{key}: {value}")
+    headers = {'User-Agent': 'Firefox/102.0'}
+
+    if after is None:
+        url = f'https://www.reddit.com/r/{subreddit}/hot.json'
     else:
-        print()
+        url = f'https://www.reddit.com/r/{subreddit}/hot.json?after={after}'
+
+    r = get(url, headers=headers, allow_redirects=False)
+
+    if r.status_code != 200:
+        return
+
+    data = r.json().get('data')
+    if not data:
+        return
+
+    children = data.get('children', [])
+    for child in children:
+        title_words = set(child['data']['title'].lower().split())
+        for word in word_list:
+            if word.lower() in title_words:
+                word_count[word] = word_count.get(word, 0) + 1
+
+    after = data.get('after')
+    if after:
+        count_words(subreddit, word_list, word_count, after)
+    else:
+        sorted_words = sorted(word_count.items(),
+                              key=lambda x: (-x[1], x[0]))
+        for word, count in sorted_words:
+            print(f'{word}: {count * word_list.count(word)}')
